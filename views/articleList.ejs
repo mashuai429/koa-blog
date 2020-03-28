@@ -1,0 +1,263 @@
+<%- include('./header') %>
+
+    <style>
+        table {
+            text-align: center;
+        }
+        
+        td,
+        th {
+            padding: 10px 0;
+            font-size: 14px;
+        }
+        
+        td,
+        th {
+            border: 1px solid;
+        }
+        
+        button {
+            padding: 2px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            margin: 0 3px;
+        }
+        
+        #editor {
+            margin-top: 14px;
+        }
+        
+        .editormd-toolbar {
+            position: absolute !important;
+        }
+        
+        .addArticle-wrap {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.8);
+            width: 81%;
+            top: 0;
+            height: 100vh;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+        
+        .addArticle-wrap>div {
+            width: 86%;
+            margin-top: 20px;
+        }
+        
+        input[type='text'] {
+            width: 700px;
+            padding: 7px;
+            border-radius: 5px;
+        }
+        
+        .faceImg {
+            width: 90px;
+            height: 90px;
+            /* border-radius: 50%; */
+            object-fit: cover;
+        }
+        
+        .face-wrap {
+            display: flex;
+        }
+        
+        .face-wrap>div {
+            width: 90px;
+            border: 1px solid #bebebe;
+            height: 90px;
+            background: url('/public/image/face.png') no-repeat center center;
+            background-size: 50%;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        
+        input[type='file'] {
+            opacity: 0;
+            width: 100%;
+            padding-top: 72%;
+            cursor: pointer;
+        }
+        
+        .close {
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+        }
+    </style>
+
+    <link rel="stylesheet" href="/public/md/css/editormd.min.css" />
+    <script src="/public/js/jquery.js"></script>
+    <script src="/public/md/editormd.min.js"></script>
+    <script src="/public/md/lib/marked.min.js"></script>
+
+    <script src="/public/md/lib/prettify.min.js"></script>
+    <script src="/public/md/lib/raphael.min.js"></script>
+    <script src="/public/md/lib/underscore.min.js"></script>
+    <script src="/public/md/lib/sequence-diagram.min.js"></script>
+    <script src="/public/md/lib/flowchart.min.js"></script>
+    <script src="/public/md/lib/jquery.flowchart.min.js"></script>
+    <!-- <script src="/public/md/lib/"></script> -->
+    <button class="saveBtn" onclick="publish(1)">发布文章</button>
+    <table class="container">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>标题</th>
+                <th>作者</th>
+                <th>创建时间</th>
+                <th>观看量</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <%for (let index = 0; index < articleData.length; index++) {%>
+                <tr>
+                    <td>
+                        <%= articleData[index].id %>
+                    </td>
+                    <td>
+                        <%= articleData[index].title %>
+                    </td>
+                    <td>
+                        <%= articleData[index].author %>
+                    </td>
+                    <td>
+                        <%= articleData[index].createTime %>
+                    </td>
+                    <td>
+                        <%= articleData[index].see %>
+                    </td>
+                    <td>
+                        <button>编辑</button>
+                        <button onclick="delArticle(<%=articleData[index].id%>)">删除</button>
+                    </td>
+                </tr>
+                <%}%>
+        </tbody>
+    </table>
+
+    <div class="addArticle-wrap">
+        <img src="/public/image/close.png" onclick="publish(0)" class="close" alt="">
+        <div>
+            <label for="">标题:</label>
+            <input type="text" class="title" placeholder="请输入标题" />
+        </div>
+        <div class="face-wrap">
+            <label for="">头像</label>
+            <div>
+                <input type="file" class="uploadFace" onchange="uploadFace(event)">
+            </div>
+
+            <img src="" class="faceImg" alt="">
+        </div>
+        <br />
+        <div id="editor">
+            <textarea class="hiddenArea" style="display:none;"></textarea>
+        </div>
+        <button class="saveBtn">提交</button>
+        <textarea id="saveHtml" style="opacity: 0;"></textarea>
+    </div>
+
+
+    <script type="text/javascript">
+        $(function() {
+            // 转为HTML
+            $(".saveBtn").click(() => {
+                    var testEditor = editormd.markdownToHTML('saveHtml', {
+                        markdown: $('.hiddenArea').val(),
+                        htmlDecode: "style,script,iframe", // you can filter tags decode
+                        emoji: true,
+                        taskList: true,
+                        tex: true, // 默认不解析
+                        flowChart: true, // 默认不解析
+                        sequenceDiagram: true, // 默认不解析
+                        codeFold: true
+                    });
+                    let getImage = $('.faceImg').attr('src'); // 获取封面
+                    let getTitle = $('.title').val(); // 获取标题
+                    let getMd = $("#saveHtml").html(); // 获取转义后的md
+                    let postInfo = {
+                        title: getTitle,
+                        content: getMd,
+                        image: getImage.split(',')[1]
+                    };
+                    if (!getImage) {
+                        return false
+                    } else if (!getTitle) {
+                        return false
+                    } else if (!getMd) {
+                        return false
+                    }
+                    console.log(11111)
+                    $.ajax({
+                        url: 'http://localhost:3000/publish',
+                        method: 'POST',
+                        data: postInfo,
+                        success: res => {
+                            alert('恭喜你！发布成功咯~~~~~~~');
+                            let dom = document.getElementsByClassName('addArticle-wrap')[0];
+                            dom.style = 'display:none';
+                            location.reload();
+                            // console.log(res)
+                        }
+                    })
+                })
+                //
+        });
+
+        //删除文章
+        function delArticle(id) {
+            console.log(id)
+            $.ajax({
+                url: 'http://localhost:3000/delArticle',
+                method: 'POST',
+                data: {
+                    id: id
+                },
+                success: res => {
+                    alert('删除成功');
+
+                    location.reload()
+                    console.log(res)
+                }
+            })
+        }
+        //切换文章
+        function publish(type) {
+            let dom = document.getElementsByClassName('addArticle-wrap')[0];
+            if (type == 0) {
+                dom.style = "display:none"
+            } else {
+                dom.style = "display:flex";
+                let editor = editormd("editor", {
+                    width: "86%",
+                    height: "570px",
+                    markdown: "",
+                    htmlDecode: "style,script,iframe|on*",
+                    saveHTMLToTextarea: true,
+                    imageUpload: true,
+                    path: "/public/md/lib/" // Autoload modules mode, codemirror, marked... dependents libs path
+                });
+            }
+        }
+        // 上传封面
+        function uploadFace(e) {
+            // console.log(e)
+            let file = e.target.files[0];
+            let reader = new FileReader();
+            let imgDom = document.getElementsByClassName('faceImg')[0];
+            reader.readAsDataURL(file)
+            reader.onload = function(e) {
+                // console.log(e.target.result)
+                imgDom.setAttribute('src', e.target.result)
+            }
+        }
+    </script>

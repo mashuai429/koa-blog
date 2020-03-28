@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/public/css/common.css">
+    <title>我是侧边栏</title>
+</head>
+<style>
+    header {
+        background: #f8e9e9;
+        text-align: center;
+        padding: 20px 0;
+        border-bottom: 1px solid;
+    }
+</style>
+
+<body>
+    <header>
+        二哈的后台管理系统
+    </header>
+    <aside id="sidebar">
+        <a class="link" href="/account">账户信息</a>
+        <a class="link" href="/articleList">文章管理</a>
+        <!-- <a class="link" href="/publish">发布文章</a> -->
+        <a class="link" href="">留言管理</a>
+    </aside>
+
+</body>
+<script>
+    let dom = document.getElementsByClassName("link");
+    Array.prototype.slice.call(dom).map((item, index) => {
+        let hrefName = item.getAttribute('href');
+        let present = window.location.pathname;
+        if (hrefName == present) {
+            item.style = 'color:#e50000'
+        } else {
+            item.style = 'color:#303030'
+        }
+    })
+</script>
+
+</html>

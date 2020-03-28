@@ -1,0 +1,159 @@
+<%- include('./header') %>
+
+    <style>
+        input[type='text'],
+        input[type='number'] {
+            width: 235px;
+            height: 35px;
+            margin-bottom: 15px;
+            margin-left: 9px;
+            padding-left: 6px;
+            font-size: 12px;
+            border: none;
+            border-bottom: 1px solid #bebebe;
+        }
+        
+        label {
+            font-size: 14px;
+        }
+        
+        textarea {
+            resize: none;
+            width: 234px;
+            margin-left: 9px;
+            outline: none;
+            padding-left: 6px;
+            padding-top: 7px;
+            border: none;
+            border-bottom: 1px solid;
+        }
+        
+        .saveBtn {
+            border: none;
+            background: #ff7373;
+            color: #fff;
+            padding: 6px 22px;
+            border-radius: 5px;
+            margin-top: 36px;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        .faceImg {
+            width: 90px;
+            height: 90px;
+            /* border-radius: 50%; */
+            object-fit: cover;
+        }
+        
+        .face-wrap {
+            display: flex;
+        }
+        
+        .face-wrap>div {
+            width: 90px;
+            border: 1px solid #bebebe;
+            height: 90px;
+            background: url('/public/image/face.png') no-repeat center center;
+            background-size: 50%;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        
+        input[type='file'] {
+            opacity: 0;
+            width: 100%;
+            padding-top: 72%;
+            cursor: pointer;
+        }
+    </style>
+    <div class="container">
+        <div class="face-wrap">
+            <label for="">头像</label>
+            <div>
+                <!-- <span>点击上传头像</span> -->
+                <input type="file" class="uploadFace" onchange="uploadFace(event)">
+            </div>
+
+            <img src="<%=face%>" class="faceImg" alt="">
+        </div>
+        <br />
+        <label for="">姓名</label>
+        <input type="text" class="inp" value="<%=name%>" placeholder="请输入您的昵称">
+        <br />
+        <label for="">电话</label>
+        <input type="number" class="inp" value="<%=phone%>" placeholder="请输入您的电话">
+        <br />
+        <label for="">地址</label>
+        <input type="text" class="inp" value="<%=address%>" placeholder="请输入您的地址">
+        <br />
+        <label for="">邮箱</label>
+        <input type="text" class="inp" value="<%=email%>" placeholder="请输入您的邮箱">
+        <br />
+        <label for="">简介</label>
+        <textarea class="inp" id="textarea" placeholder="填写个人简介" id="" cols="30" rows="10"></textarea>
+        <br/>
+        <button class="saveBtn">保存信息</button>
+    </div>
+    <script src="/public/js/jquery.js"></script>
+    <script>
+        let textVal = document.getElementById("textarea"); // 修改区域默认值
+        textVal.value = `<%=content%>`;
+        // 上传头像
+        function uploadFace(e) {
+            // console.log(e)
+            let file = e.target.files[0];
+            let reader = new FileReader();
+            let imgDom = document.getElementsByClassName('faceImg')[0];
+            reader.readAsDataURL(file)
+            reader.onload = function(e) {
+                // console.log(e.target.result)
+                imgDom.setAttribute('src', e.target.result)
+            }
+        }
+        $(function() {
+            $('.saveBtn').click(() => {
+                // console.log($('.inp'))
+                let getFace = $('.faceImg').attr('src'); // 获取头像
+
+                console.log(getFace)
+                let postInfo = {
+                    id: 1,
+                    face: getFace.split(',')[1]
+                };
+                Array.prototype.slice.call($('.inp')).map((item, index) => {
+                    // console.log(item)
+                    if (!item.value || !getFace) {
+                        alert('请填写所有内容后再提交!!!!');
+                        return;
+                    }
+                    switch (index) {
+                        case 0:
+                            postInfo.name = item.value;
+                            break;
+                        case 1:
+                            postInfo.phone = item.value;
+                            break;
+                        case 2:
+                            postInfo.address = item.value;
+                            break;
+                        case 3:
+                            postInfo.email = item.value;
+                            break;
+                        case 4:
+                            postInfo.content = item.value;
+                            break;
+                    }
+                })
+                $.ajax({
+                    url: 'http://localhost:3000/changeInfo',
+                    method: 'POST',
+                    data: postInfo,
+                    success: res => {
+                        alert('修改成功')
+                        console.log(res)
+                    }
+                })
+            })
+        })
+    </script>
